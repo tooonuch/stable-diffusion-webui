@@ -31,7 +31,7 @@ from typing import Any
 import piexif
 import piexif.helper
 from contextlib import closing
-from modules.progress import create_task_id, add_task_to_queue, start_task, finish_task, current_task
+from modules.progress import create_task_id, add_task_to_queue, start_task, finish_task, current_task, get_pending_tasks
 
 def script_name_to_index(name, scripts):
     try:
@@ -214,6 +214,7 @@ class Api:
         self.add_api_route("/sdapi/v1/extra-batch-images", self.extras_batch_images_api, methods=["POST"], response_model=models.ExtrasBatchImagesResponse)
         self.add_api_route("/sdapi/v1/png-info", self.pnginfoapi, methods=["POST"], response_model=models.PNGInfoResponse)
         self.add_api_route("/sdapi/v1/progress", self.progressapi, methods=["GET"], response_model=models.ProgressResponse)
+        self.add_api_route("/sdapi/v1/pending-tasks", get_pending_tasks, methods=["GET"])
         self.add_api_route("/sdapi/v1/interrogate", self.interrogateapi, methods=["POST"])
         self.add_api_route("/sdapi/v1/interrupt", self.interruptapi, methods=["POST"])
         self.add_api_route("/sdapi/v1/skip", self.skip, methods=["POST"])
@@ -534,7 +535,7 @@ class Api:
                 p.outpath_samples = opts.outdir_img2img_samples
 
                 try:
-                    shared.state.begin(job="scripts_img2img")
+                    shared.state.begin(job=task_id)
                     start_task(task_id)
                     if selectable_scripts is not None:
                         p.script_args = script_args
